@@ -17,6 +17,7 @@ decay_func <- function(x, alpha, delta){
 #' @param startT numeric start time
 #' @param endT numeric end time
 #' @param maxI numeric maximum number of points to simulate
+#' @param progressBar boolean. Include progress bar
 #' @examples
 #' lambda_levels <- c(0.5, 1, 2, 1, 3, 0.5, 1, 1, 2, 0.5, 0.5, 0.5, 0.5, 2, 2, 2, 4, 0, 1, 1, 1)
 #' lambda_fun <- stepfun(seq(10, 200, by = 10), y = lambda_levels)
@@ -35,7 +36,7 @@ sim_hawkes <- function(lambda_fun, history0 = NULL, kern, startT = max(history0)
   history <- history0
 
   if(progressBar){
-    pb <- txtProgressBar(min = startT, max = endT, style = 3)
+    pb <- utils::txtProgressBar(min = startT, max = endT, style = 3)
   }
 
   while(i <= maxI){
@@ -53,7 +54,7 @@ sim_hawkes <- function(lambda_fun, history0 = NULL, kern, startT = max(history0)
       if(TT > endT){
         return(history)
       }
-      if(progressBar){setTxtProgressBar(pb, TT)}
+      if(progressBar){utils::setTxtProgressBar(pb, TT)}
       history <- c(history, TT)
       i <- i + 1
     }

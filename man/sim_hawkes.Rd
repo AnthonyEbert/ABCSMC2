@@ -26,6 +26,8 @@ sim_hawkes(
 \item{endT}{numeric end time}
 
 \item{maxI}{numeric maximum number of points to simulate}
+
+\item{progressBar}{boolean. Include progress bar}
 }
 \description{
 Simulate inhomogenous Hawkes process
