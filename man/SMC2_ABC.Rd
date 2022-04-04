@@ -71,7 +71,7 @@ The \code{loss} argument is a function with the following arguments: \code{x}, \
 \examples{
 \dontrun{
 library(parallel)
-library(StateSpaceInference)
+library(ABCSMC2)
 library(ggplot2)
 library(ggalt)
 
