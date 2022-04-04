@@ -1,1 +1,1 @@
-# ABCSMC2
+# StateSpaceInference

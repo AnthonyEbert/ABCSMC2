@@ -1,0 +1,20 @@
+Package: StateSpaceInference
+Title: What the Package Does (one line, title case)
+Version: 2.2.2
+Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
+Description: Performs likelihood-free state space inference
+Depends: R (>= 3.5.1)
+Imports:
+  dplyr,
+  mvtnorm,
+  gtools,
+  plyr,
+  abind,
+  Hmisc,
+  e1071,
+  sn,
+  stabledist
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.1.2
