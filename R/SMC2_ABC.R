@@ -160,7 +160,7 @@ SMC2_ABC <- function(prior_sample, dprior, loss, loss_args, Ntheta, Nx, pacc, dt
 
 
   for(tp in 1:TT){
-    x_list <- lfunc(x_list, theta_filter, time1 = tp*dtp - dtp, time2 = tp*dtp, loss = loss, loss_args = loss_args)
+    x_list <- lfunc(x_list, particle_filter_wrapper, time1 = tp*dtp - dtp, time2 = tp*dtp, loss = loss, loss_args = loss_args)
 
     distances <- sapply(x_list, function(x){x$distance})
     if(tp > 1){
@@ -170,8 +170,7 @@ SMC2_ABC <- function(prior_sample, dprior, loss, loss_args, Ntheta, Nx, pacc, dt
     }
 
     if(is.na(eps[tp])){
-      eps[tp] <- Hmisc::wtd.quantile(distances, weights = d_weights/sum(d_weights) * 1e20, probs = pacc, normwt = FALSE)
-      #eps[tp] <- quantile(as.numeric(distances), probs = pacc)
+      eps[tp] <- DescTools::Quantile(distances, d_weights, probs = pacc)
     }
 
     for(m in 1:Ntheta){
@@ -191,7 +190,7 @@ SMC2_ABC <- function(prior_sample, dprior, loss, loss_args, Ntheta, Nx, pacc, dt
 
     ESS <- sum(omegas) ^ 2 / sum(omegas^2)
     for(i in 1:dim(thetas)[2]){
-      print(as.numeric(Hmisc::wtd.quantile(thetas[,i], weights = omegas/sum(omegas) * 1e20, normwt = FALSE, probs = c(0, 0.025, 0.5, 0.975, 1))))
+      print(as.numeric(DescTools::Quantile(thetas[,i], weights = omegas, probs = c(0, 0.025, 0.5, 0.975, 1))))
     }
     ifelse(ESS_threshold > 0, print(paste0(tp, ". ", ESS)), print(paste("SMC: ", ESS)))
 

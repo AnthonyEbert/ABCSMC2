@@ -10,7 +10,6 @@ Imports:
     gtools,
     plyr,
     abind,
-    Hmisc,
     e1071,
     sn,
     stabledist,
