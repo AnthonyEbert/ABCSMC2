@@ -70,21 +70,19 @@ The \code{loss} argument is a function with the following arguments: \code{x}, \
 }
 \examples{
 \dontrun{
-library(parallel)
 library(ABCSMC2)
 library(ggplot2)
 library(ggalt)
 
-cl <- makeCluster(parallel::detectCores() - 1)
+#cl <- makeCluster(parallel::detectCores() - 1)
 #cl <- "mclapply"
-#cl <- NULL
+cl <- NULL
 
-TT <- 10
+TT <- 30
 true_theta <- c(0.25, 0.5)
 lower <- 0
 upper <- 3.5
 sd_t <- 1
-init <- min(rgamma(1, 100, 100), upper - 1)
 a_logit <- 0.9
 dist_coef <- 0.5
 true_states <-cumsum(rnorm(TT))
@@ -92,11 +90,12 @@ true_states <-cumsum(rnorm(TT))
 lambda_fun <- stepfun(seq(1, TT - 1, by = 1), y = true_states)
 
 generator <- function(TT, true_states, theta){
-y <- list()
-for(i in 1:TT){
-  y[[i]] <- as.numeric(sn::rsn(1e3, dp = sn::cp2dp(cp = c(true_states[i], theta), "SN")))
-}
-return(y)
+    y <- list()
+    for(i in 1:TT){
+        obs <- as.numeric(sn::rsn(1e5, dp = sn::cp2dp(cp = c(true_states[i], theta), "SN")))
+        y[[i]] <- c(mean(obs), stats::sd(obs), e1071::skewness(obs))
+    }
+    return(y)
 }
 
 y <- generator(TT, true_states, true_theta)
@@ -111,27 +110,26 @@ inp <- list(
 )
 
 loss <- function(x, theta, time1, time2, inp){
-x <- as.numeric(x[1])
+    x <- as.numeric(x[1])
 
-if(gtools::invalid(x)){
-  x <- rnorm(1)
-} else {
-  x <- rnorm(1, mean = x)
+    if(gtools::invalid(x)){
+        x <- rnorm(1)
+    } else {
+        x <- rnorm(1, mean = x)
+    }
+
+    y <- sn::rsn(1e1, dp = sn::cp2dp(cp = c(x, theta), "SN"))
+
+    ss_obs <- inp$y[[time2]]
+    ss_sim <- c(mean(y), stats::sd(y), e1071::skewness(y))
+
+    return(list(distance = sqrt(sum((ss_obs - ss_sim)^2)), x = x))
 }
 
-y <- sn::rsn(1e1, dp = sn::cp2dp(cp = c(x, theta), "SN"))
 
-ss_obs <- c(mean(inp$y[[time2]]), sd(inp$y[[time2]]), e1071::skewness(inp$y[[time2]]))
-ss_sim <- c(mean(y), sd(y), e1071::skewness(y))
-
-
-return(list(distance = sqrt(sum((ss_obs - ss_sim)^2)), x = x))
-}
-
-
-Ntheta = 200
-Nx = 10
-pacc = 0.5
+Ntheta = 100
+Nx = 100
+pacc = 0.2
 
 lower_theta <- c(0.1, 0.2)
 upper_theta <- c(0.5, 0.8)
@@ -141,18 +139,23 @@ prior_sample <- data.frame(theta1 = runif(Ntheta, lower_theta[1], upper_theta[1]
 prior_sample <- as.matrix(prior_sample, ncol = 2)
 
 trans <- function(x, trans_args){
-  theta1 <- log(x[,1])
-  theta2 <- log(x[,2])
+  theta1 <- qnorm(x[,1])
+  theta2 <- qnorm(x[,2] / 0.9)
   return(cbind(theta1, theta2))
 }
 
 invtrans <- function(x, trans_args){
-  theta1 <- exp(x[,1])
-  theta2 <- exp(x[,2])
+  theta1 <- pnorm(x[,1])
+  theta2 <- pnorm(x[,2]) * 0.9
   return(cbind(theta1, theta2))
 }
 
-full_list <- SMC2_ABC(prior_sample, dprior = function(x){dunif(x[1], 0.1, 0.5)*dunif(x[2],0.2,0.8)}, loss, loss_args = inp, Ntheta = Ntheta, Nx = Nx, pacc = pacc, cl = cl, dt = 1, ESS_threshold = 0.5, TT = TT, trans = trans, invtrans = invtrans, cov_coef = 0.25^2)
+acceptance_correction <- function(x){
+    1/dnorm(qnorm(x[,1])) * (1/0.9)/(dnorm(qnorm(x[,2]/0.9)))
+}
+
+
+full_list <- SMC2_ABC(prior_sample, dprior = function(x){dunif(x[1], 0.1, 0.5)*dunif(x[2],0.2,0.8)}, loss, loss_args = inp, Ntheta = Ntheta, Nx = Nx, pacc = pacc, cl = cl, dt = 1, ESS_threshold = 0.5, TT = TT, trans = trans, invtrans = invtrans, cov_coef = 0.25^2, acceptance_correction = acceptance_correction)
 
 state_df <- get_state(full_list)
 
