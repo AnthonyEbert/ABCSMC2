@@ -151,7 +151,7 @@ invtrans <- function(x, trans_args){
 }
 
 acceptance_correction <- function(x){
-    1/dnorm(qnorm(x[,1])) * (1/0.9)/(dnorm(qnorm(x[,2]/0.9)))
+    1/dnorm(qnorm(x[1])) * (1/0.9)/(dnorm(qnorm(x[2]/0.9)))
 }
 
 

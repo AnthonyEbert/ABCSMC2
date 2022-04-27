@@ -103,7 +103,7 @@
 #' }
 #'
 #' acceptance_correction <- function(x){
-#'     1/dnorm(qnorm(x[,1])) * (1/0.9)/(dnorm(qnorm(x[,2]/0.9)))
+#'     1/dnorm(qnorm(x[1])) * (1/0.9)/(dnorm(qnorm(x[2]/0.9)))
 #' }
 #'
 #'
@@ -212,17 +212,17 @@ SMC2_ABC <- function(prior_sample, dprior, loss, loss_args, Ntheta, Nx, pacc, dt
       x_list_prop <- full_list_prop[[tp]]
 
       proposed_omegas <- sapply(x_list_prop, function(x){x$omega})
-      p_aa <- sample(1:Ntheta, Ntheta, prob = proposed_omegas/sum(proposed_omegas), replace = TRUE)
+      #p_aa <- sample(1:Ntheta, Ntheta, prob = proposed_omegas/sum(proposed_omegas), replace = TRUE)
 
       for(m in 1:Ntheta){
         #proposed_Z_hat <- x_list_prop[[p_aa[m]]]$pprod
         #old_Z_hat      <- x_list[[aa[m]]]$pprod
 
-        Z_ratio <- exp(x_list_prop[[p_aa[m]]]$lpprod - x_list[[aa[m]]]$lpprod)
+        Z_ratio <- exp(x_list_prop[[m]]$lpprod - x_list[[aa[m]]]$lpprod)
 
-        MH_ratio <- Z_ratio * dprior(proposed_thetas[p_aa[m],]) / (dprior(thetas[aa[m],]))
+        MH_ratio <- Z_ratio * dprior(proposed_thetas[m,]) / (dprior(thetas[aa[m],]))
 
-        MH_ratio <- MH_ratio * acceptance_correction(thetas[aa[m],]) / acceptance_correction(proposed_thetas[p_aa[m],])
+        MH_ratio <- MH_ratio * acceptance_correction(thetas[aa[m],]) / acceptance_correction(proposed_thetas[m,])
 
           #(0.5/(dnorm(qnorm(thetas[aa[m]])))) * (0.5/(dnorm(qnorm(proposed_thetas[p_aa[m]]))))
 
@@ -231,7 +231,7 @@ SMC2_ABC <- function(prior_sample, dprior, loss, loss_args, Ntheta, Nx, pacc, dt
         if(un < MH_ratio){
           nb <- nb + 1
           for(time_star in 1:tp){
-            full_list[[time_star]][[m]] <- full_list_prop[[time_star]][[p_aa[m]]]
+            full_list[[time_star]][[m]] <- full_list_prop[[time_star]][[m]]
           }
         } else {
           for(time_star in 1:tp){

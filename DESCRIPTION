@@ -1,6 +1,6 @@
 Package: ABCSMC2
 Title: Combined state and parameter inference with approximate Bayesian computation
-Version: 2.2.2
+Version: 2.2.3
 Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
 Description: Performs likelihood-free state space inference. 
 Depends: R (>= 3.5.1)

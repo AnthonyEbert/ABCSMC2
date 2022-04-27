@@ -30,13 +30,13 @@ check_input <- function(prior_sample, dprior, loss, loss_args, Ntheta, Nx, pacc,
   stopifnot(length(formals(trans)) == length(formals(invtrans)))
 
   if(
-    !all.equal(
+    isFALSE(all.equal(
       prior_sample[1, , drop = FALSE],
       invtrans(
         trans(prior_sample[1, , drop = FALSE], trans_args),
       trans_args)
     )
-  ) {
+  )) {
 
     warning("invtrans does not undo trans function")
   }
